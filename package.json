@@ -1,0 +1,8 @@
+{
+  "name": "edwin-portfolio",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p dist && cp public/index.html dist/",
+    "vercel-build": "mkdir -p dist && cp public/index.html dist/"
+  }
+}

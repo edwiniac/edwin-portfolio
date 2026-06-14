@@ -1,0 +1,7 @@
+{
+  "buildCommand": "mkdir -p dist && cp public/index.html dist/",
+  "outputDirectory": "dist",
+  "installCommand": "echo 'no install needed'",
+  "framework": null,
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
