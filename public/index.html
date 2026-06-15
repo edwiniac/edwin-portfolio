@@ -252,11 +252,105 @@
   #pre .bar{ height:100%; width:0%; background:linear-gradient(90deg,var(--indigo),var(--accent)); box-shadow:0 0 12px var(--violet); transition:width .25s ease; }
   #pre .pct{ font-family:'Space Grotesk',sans-serif; font-size:0.7rem; letter-spacing:0.2em; color:var(--gray); }
 
+  /* ── Hero rotating "now" line ── */
+  .now{
+    margin-top:22px; display:inline-flex; align-items:center; gap:12px;
+    font-size:0.78rem; color:var(--gray);
+    padding:8px 16px; border-radius:999px;
+    background:var(--glass); border:1px solid rgba(124,58,237,0.14);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  }
+  .now-label{ font-size:0.58rem; text-transform:uppercase; letter-spacing:0.22em; color:var(--accent); }
+  .now-label::before{ content:''; display:inline-block; width:6px; height:6px; margin-right:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); vertical-align:middle; animation:nowpulse 2s var(--ease) infinite; }
+  @keyframes nowpulse{ 0%,100%{opacity:1} 50%{opacity:.35} }
+  #rot{ font-family:'Space Grotesk',sans-serif; color:var(--light); font-weight:500; }
+  #rot::after{ content:'▍'; color:var(--accent); animation:caret 1s steps(1) infinite; margin-left:1px; }
+  @keyframes caret{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+  /* ── Project card meta / tags ── */
+  .proj h3{ display:flex; align-items:center; gap:9px; }
+  .proj .stars{
+    font-family:'Inter'; font-size:0.62rem; font-weight:500; color:var(--gray);
+    display:inline-flex; align-items:center; gap:3px; letter-spacing:0;
+    padding:2px 7px; border-radius:6px; border:1px solid rgba(124,58,237,0.16);
+  }
+  .proj .stars svg{ width:9px; height:9px; fill:var(--accent); }
+  .ptags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+  .ptags span{
+    font-size:0.6rem; letter-spacing:0.03em; color:var(--accent2);
+    padding:3px 9px; border-radius:6px;
+    background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.16);
+  }
+
+  /* ── Grouped skills ── */
+  .skill-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:18px 26px; }
+  .skill-group .sg-label{
+    font-size:0.6rem; text-transform:uppercase; letter-spacing:0.2em; color:var(--accent);
+    display:flex; align-items:center; gap:10px; margin-bottom:13px;
+  }
+  .skill-group .sg-label::after{ content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(124,58,237,0.4),transparent); }
+
+  /* ── Progress ring counter ── */
+  #counter{ width:auto; }
+  #counter .ring{ position:relative; width:52px; height:52px; }
+  #counter .ring svg{ width:52px; height:52px; transform:rotate(-90deg); }
+  #counter .ring .track-c{ fill:none; stroke:rgba(255,255,255,0.08); stroke-width:2.5; }
+  #counter .ring .fill-c{ fill:none; stroke:url(#ringgrad); stroke-width:2.5; stroke-linecap:round; transition:stroke-dashoffset .6s var(--ease); filter:drop-shadow(0 0 4px var(--violet)); }
+  #counter .ring .num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  #counter .ring .num .cur{ font-size:1.05rem; font-weight:600; color:var(--light); }
+  #counter .lbl{ display:flex; flex-direction:column; gap:2px; }
+  #counter .lbl .sec{ font-family:'Space Grotesk',sans-serif; font-size:0.82rem; font-weight:500; color:var(--light); letter-spacing:0.01em; }
+  #counter .lbl .tot{ font-size:0.6rem; text-transform:uppercase; letter-spacing:0.16em; color:var(--gray); }
+  #counter{ flex-direction:row; align-items:center; gap:13px; }
+
+  /* ── Keyboard shortcuts overlay ── */
+  #kbd-btn{
+    position:fixed; right:clamp(20px,4vw,46px); bottom:30px; z-index:20;
+    width:34px; height:34px; border-radius:9px; display:grid; place-items:center;
+    background:var(--glass); border:1px solid rgba(124,58,237,0.18); color:var(--accent2);
+    font-family:'Space Grotesk',sans-serif; font-size:0.82rem; cursor:none;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    opacity:0; transition:opacity .8s ease .4s, border-color .3s, background .3s, transform .3s var(--ease);
+  }
+  body.ready #kbd-btn{ opacity:1; }
+  #kbd-btn:hover{ border-color:var(--violet); background:rgba(124,58,237,0.16); transform:translateY(-2px); }
+  @media(pointer:coarse){ #kbd-btn{ cursor:pointer; } }
+  #shortcuts{
+    position:fixed; inset:0; z-index:9998; display:flex; align-items:center; justify-content:center;
+    background:rgba(2,0,5,0.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s;
+  }
+  #shortcuts.on{ opacity:1; visibility:visible; transition:opacity .35s ease; }
+  #shortcuts .sc-card{
+    width:min(420px,90vw); padding:30px 32px; border-radius:18px;
+    background:rgba(14,8,24,0.85); border:1px solid rgba(124,58,237,0.28);
+    box-shadow:0 30px 90px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.12);
+    transform:translateY(16px) scale(0.97); transition:transform .4s var(--ease);
+  }
+  #shortcuts.on .sc-card{ transform:none; }
+  #shortcuts h3{ font-family:'Space Grotesk',sans-serif; font-size:1.15rem; margin-bottom:20px; font-weight:600; }
+  #shortcuts .sc-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(124,58,237,0.08); }
+  #shortcuts .sc-row:last-child{ border-bottom:none; }
+  #shortcuts .sc-row span{ font-size:0.82rem; color:var(--gray); }
+  #shortcuts kbd{
+    font-family:'Space Grotesk',sans-serif; font-size:0.7rem; color:var(--accent2);
+    padding:4px 9px; border-radius:6px; background:rgba(124,58,237,0.1);
+    border:1px solid rgba(124,58,237,0.22); box-shadow:0 2px 0 rgba(124,58,237,0.18);
+  }
+  #shortcuts kbd + kbd{ margin-left:5px; }
+
+  /* ── Focus accessibility ── */
+  a:focus-visible, .btn:focus-visible, .pill:focus-visible, #nav .dot:focus-visible, #kbd-btn:focus-visible, .proj:focus-visible{
+    outline:2px solid var(--accent); outline-offset:3px; border-radius:8px;
+  }
+
   @media (max-width:768px) {
     .panel{ align-items:center; padding:84px 22px; }
     .stats{ gap:22px; }
     #hint{ display:none; }
     #avail{ display:none; }
+    #kbd-btn{ display:none; }
+    .skill-grid{ grid-template-columns:1fr; gap:16px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .r{ opacity:1 !important; transform:none !important; filter:none !important; }
@@ -297,7 +391,31 @@
   <div class="dot" data-i="4" data-label="Connect" data-cursor><i></i></div>
 </nav>
 
-<div id="counter"><span class="cur">01</span><span class="sep">/</span><span class="tot">05</span></div>
+<div id="counter">
+  <div class="ring">
+    <svg viewBox="0 0 52 52">
+      <defs><linearGradient id="ringgrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a78bfa"/>
+      </linearGradient></defs>
+      <circle class="track-c" cx="26" cy="26" r="23"/>
+      <circle class="fill-c" cx="26" cy="26" r="23"/>
+    </svg>
+    <div class="num"><span class="cur">01</span></div>
+  </div>
+  <div class="lbl"><span class="sec">Intro</span><span class="tot">01 / 05</span></div>
+</div>
+
+<button id="kbd-btn" aria-label="Keyboard shortcuts" data-cursor>?</button>
+<div id="shortcuts" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="sc-card">
+    <h3>Navigate faster</h3>
+    <div class="sc-row"><span>Next / previous section</span><span><kbd>↓</kbd><kbd>↑</kbd></span></div>
+    <div class="sc-row"><span>Jump to section</span><span><kbd>1</kbd>–<kbd>5</kbd></span></div>
+    <div class="sc-row"><span>First / last</span><span><kbd>Home</kbd><kbd>End</kbd></span></div>
+    <div class="sc-row"><span>Toggle this panel</span><span><kbd>?</kbd></span></div>
+    <div class="sc-row"><span>Close</span><span><kbd>Esc</kbd></span></div>
+  </div>
+</div>
 
 <div id="hint"><div class="mouse"></div><span>Scroll to explore</span></div>
 
@@ -310,6 +428,7 @@
     <div class="pre r" style="--d:.05s">ML Engineer · AI Systems · Open Source</div>
     <h1 id="hero-h"></h1>
     <p class="sub r" style="--d:.7s">Multi-agent systems, RAG pipelines, MCP tool integrations — 4+ years building production AI that ships.</p>
+    <div class="now r" style="--d:.95s"><span class="now-label">Now</span><span id="rot">multi-agent orchestration</span></div>
   </div>
 </div>
 
@@ -335,20 +454,24 @@
     <span class="eyebrow r" style="--d:.05s">02 — Selected Work</span>
     <h2 class="r" style="--d:.12s">Things I've <span>built</span></h2>
     <a href="https://github.com/edwiniac/mcp-witness" target="_blank" rel="noopener" class="proj r" style="--d:.2s" data-cursor>
-      <div class="t">Open Source · MCP</div><h3>MCP Witness</h3>
+      <div class="t">Open Source · MCP</div><h3>MCP Witness <span class="stars"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.7 7.1L12 17.6 5.7 21.3l1.7-7.1L2 9.5l7.1-.6z"/></svg>107 tests</span></h3>
       <div class="d">Cryptographic audit trails for AI. Merkle trees, RFC 3161 timestamps, 6 compliance presets. 14 tools, 107 tests.</div>
+      <div class="ptags"><span>Python</span><span>Merkle Trees</span><span>RFC 3161</span><span>SOC2</span></div>
     </a>
     <a href="https://github.com/edwiniac/research-swarm" target="_blank" rel="noopener" class="proj r" style="--d:.28s" data-cursor>
       <div class="t">Multi-Agent</div><h3>Research Swarm</h3>
       <div class="d">Parallel AI specialists collaborating on research. Agent-to-agent routing, shared state, structured execution.</div>
+      <div class="ptags"><span>LangGraph</span><span>Agent Routing</span><span>Shared State</span></div>
     </a>
     <a href="https://github.com/edwiniac/evalkit" target="_blank" rel="noopener" class="proj r" style="--d:.36s" data-cursor>
       <div class="t">LLM Evaluation</div><h3>EvalKit</h3>
       <div class="d">Production-grade evaluation framework. Hallucination, factuality, relevance scoring with version tracking.</div>
+      <div class="ptags"><span>Python</span><span>Eval Harness</span><span>Version Tracking</span></div>
     </a>
     <a href="https://github.com/edwiniac/devrag-lite" target="_blank" rel="noopener" class="proj r" style="--d:.44s" data-cursor>
       <div class="t">RAG Pipeline</div><h3>DevRAG Lite</h3>
       <div class="d">Multi-model RAG for developer workflows. Semantic retrieval, chunking strategies, grounded generation.</div>
+      <div class="ptags"><span>Vector Search</span><span>Chunking</span><span>Grounded Gen</span></div>
     </a>
   </div>
 </div>
@@ -358,15 +481,36 @@
   <div class="panel-inner" style="max-width:720px;">
     <span class="eyebrow r" style="--d:.05s">03 — Capabilities</span>
     <h2 class="r" style="--d:.12s">What I <span>command</span></h2>
-    <div class="pills r" style="--d:.22s">
-      <span class="pill">Python</span><span class="pill">TypeScript</span><span class="pill">SQL</span>
-      <span class="pill">React / Next.js</span><span class="pill">Three.js / WebGL</span><span class="pill">Tailwind</span>
-      <span class="pill">LangChain / LangGraph</span><span class="pill">MCP Protocol</span><span class="pill">Multi-Agent Systems</span>
-      <span class="pill">RAG / Vector Search</span><span class="pill">Prompt Engineering</span><span class="pill">Tool-Calling</span>
-      <span class="pill">PyTorch / TensorFlow</span><span class="pill">Hugging Face</span><span class="pill">OpenCV</span>
-      <span class="pill">Docker / AWS</span><span class="pill">Kafka</span><span class="pill">CI/CD</span>
-      <span class="pill">Session &amp; State Mgmt</span><span class="pill">LLM Evaluation</span><span class="pill">SOC2 / HIPAA</span>
-      <span class="pill">Cryptographic Hashing</span><span class="pill">Merkle Trees</span><span class="pill">REST APIs</span>
+    <div class="skill-grid">
+      <div class="skill-group r" style="--d:.2s">
+        <div class="sg-label">Languages &amp; Web</div>
+        <div class="pills">
+          <span class="pill">Python</span><span class="pill">TypeScript</span><span class="pill">SQL</span>
+          <span class="pill">React / Next.js</span><span class="pill">Three.js / WebGL</span><span class="pill">Tailwind</span>
+        </div>
+      </div>
+      <div class="skill-group r" style="--d:.28s">
+        <div class="sg-label">AI &amp; Agents</div>
+        <div class="pills">
+          <span class="pill">LangChain / LangGraph</span><span class="pill">MCP Protocol</span><span class="pill">Multi-Agent Systems</span>
+          <span class="pill">RAG / Vector Search</span><span class="pill">Prompt Engineering</span><span class="pill">Tool-Calling</span>
+          <span class="pill">LLM Evaluation</span>
+        </div>
+      </div>
+      <div class="skill-group r" style="--d:.36s">
+        <div class="sg-label">ML &amp; Data</div>
+        <div class="pills">
+          <span class="pill">PyTorch / TensorFlow</span><span class="pill">Hugging Face</span><span class="pill">OpenCV</span>
+          <span class="pill">Kafka</span><span class="pill">REST APIs</span>
+        </div>
+      </div>
+      <div class="skill-group r" style="--d:.44s">
+        <div class="sg-label">Infra &amp; Security</div>
+        <div class="pills">
+          <span class="pill">Docker / AWS</span><span class="pill">CI/CD</span><span class="pill">Session &amp; State Mgmt</span>
+          <span class="pill">SOC2 / HIPAA</span><span class="pill">Cryptographic Hashing</span><span class="pill">Merkle Trees</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -420,6 +564,31 @@ const isMobile = window.matchMedia('(pointer:coarse)').matches;
     h.appendChild(document.createTextNode(' '));
     i++;
   });
+})();
+
+// ── Rotating "now" headline ───────────────────────
+(() => {
+  const el = document.getElementById('rot');
+  if (!el) return;
+  const phrases = [
+    'multi-agent orchestration',
+    'RAG retrieval pipelines',
+    'MCP tool integrations',
+    'LLM evaluation harnesses',
+    'agentic systems at scale',
+  ];
+  if (reduce) { el.textContent = phrases[0]; return; }
+  let pi = 0, ci = 0, deleting = false;
+  const tick = () => {
+    const word = phrases[pi];
+    ci += deleting ? -1 : 1;
+    el.textContent = word.slice(0, ci);
+    let delay = deleting ? 38 : 70;
+    if (!deleting && ci === word.length) { deleting = true; delay = 1600; }
+    else if (deleting && ci === 0) { deleting = false; pi = (pi+1) % phrases.length; delay = 320; }
+    setTimeout(tick, delay);
+  };
+  setTimeout(tick, 1400);
 })();
 
 // ── SCENE: Voxel-style dark castle corridor ───────
@@ -639,13 +808,27 @@ const navDots = document.querySelectorAll('#nav .dot');
 const panels = document.querySelectorAll('.panel');
 const progFill = document.querySelector('#prog .fill');
 const counterCur = document.querySelector('#counter .cur');
+const counterSec = document.querySelector('#counter .sec');
+const counterTot = document.querySelector('#counter .tot');
+const ringFill = document.querySelector('#counter .fill-c');
+const RING_C = 2 * Math.PI * 23;
+ringFill.style.strokeDasharray = RING_C;
+ringFill.style.strokeDashoffset = RING_C;
 
 function setPanel(n) {
   current = n;
   panels.forEach((p,i) => p.classList.toggle('on', i===n));
-  navDots.forEach((d,i) => d.classList.toggle('on', i===n));
-  progFill.style.width = ((n/(TOTAL-1))*100) + '%';
+  navDots.forEach((d,i) => {
+    const on = i===n;
+    d.classList.toggle('on', on);
+    d.setAttribute('aria-current', on ? 'true' : 'false');
+  });
+  const frac = n/(TOTAL-1);
+  progFill.style.width = (frac*100) + '%';
+  ringFill.style.strokeDashoffset = RING_C * (1 - frac);
   counterCur.textContent = String(n+1).padStart(2,'0');
+  counterSec.textContent = sections[n];
+  counterTot.textContent = String(n+1).padStart(2,'0') + ' / ' + String(TOTAL).padStart(2,'0');
   document.getElementById('hint').style.opacity = n === 0 ? '0.5' : '0';
 }
 function goTo(n) {
@@ -668,13 +851,29 @@ window.addEventListener('touchend', e => {
   const diff = touchStart - e.changedTouches[0].clientY;
   if (Math.abs(diff) > 40) goTo(current + Math.sign(diff));
 });
+// ── Keyboard shortcuts overlay ─────────────────────
+const scOverlay = document.getElementById('shortcuts');
+const kbdBtn = document.getElementById('kbd-btn');
+const toggleSC = (force) => scOverlay.classList.toggle('on', force);
+kbdBtn.addEventListener('click', () => toggleSC());
+scOverlay.addEventListener('click', () => toggleSC(false));
+
 window.addEventListener('keydown', e => {
+  if (e.key === '?' ) { e.preventDefault(); toggleSC(); return; }
+  if (e.key === 'Escape') { toggleSC(false); return; }
   if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'j') goTo(current+1);
   if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'k') goTo(current-1);
   if (e.key === 'Home') goTo(0);
   if (e.key === 'End') goTo(TOTAL-1);
+  if (e.key >= '1' && e.key <= String(TOTAL)) goTo(parseInt(e.key)-1);
 });
-navDots.forEach(d => d.addEventListener('click', () => goTo(parseInt(d.dataset.i))));
+navDots.forEach(d => {
+  d.setAttribute('tabindex','0');
+  d.setAttribute('role','button');
+  d.setAttribute('aria-label', d.dataset.label + ' section');
+  d.addEventListener('click', () => goTo(parseInt(d.dataset.i)));
+  d.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(parseInt(d.dataset.i)); } });
+});
 
 document.addEventListener('mousemove', e => {
   mouse.x = (e.clientX/window.innerWidth)*2-1;
