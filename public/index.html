@@ -339,6 +339,44 @@
   }
   #shortcuts kbd + kbd{ margin-left:5px; }
 
+  /* ── Section wipe sweep ── */
+  #wipe{
+    position:fixed; top:-10%; bottom:-10%; left:0; width:24%;
+    z-index:4; pointer-events:none;
+    transform:skewX(-14deg) translateX(-80vw);
+    background:linear-gradient(90deg,transparent,rgba(124,58,237,0.14),rgba(196,181,253,0.22),rgba(124,58,237,0.14),transparent);
+    filter:blur(7px);
+  }
+  #wipe.go{ animation:wipe .75s cubic-bezier(.7,0,.3,1); }
+  @keyframes wipe{ from{ transform:skewX(-14deg) translateX(-80vw); } to{ transform:skewX(-14deg) translateX(180vw); } }
+
+  /* ── Ghost section numerals ── */
+  .panel-inner{ position:relative; }
+  .ghost{
+    position:absolute; top:-100px; right:-30px; z-index:-1;
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(8rem,17vw,14rem); line-height:1; letter-spacing:-0.04em;
+    color:transparent; -webkit-text-stroke:1.5px rgba(167,139,250,0.13);
+    pointer-events:none; user-select:none;
+    animation:ghostfloat 8s ease-in-out infinite alternate;
+  }
+  @keyframes ghostfloat{ from{ transform:translateY(0); } to{ transform:translateY(-16px); } }
+
+  /* ── Button sheen sweep ── */
+  .btn{ overflow:hidden; }
+  .btn::before{
+    content:''; position:absolute; top:0; left:-80%; width:55%; height:100%;
+    transform:skewX(-20deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent);
+    transition:left .65s var(--ease);
+  }
+  .btn:hover::before{ left:140%; }
+
+  /* ── Drag-look affordance ── */
+  body.dragging{ user-select:none; -webkit-user-select:none; }
+  body.dragging #cring{ width:46px; height:46px; border-style:dashed; }
+  @media(pointer:coarse){ #hint .mouse{ display:none; } }
+
   /* ── Focus accessibility ── */
   a:focus-visible, .btn:focus-visible, .pill:focus-visible, #nav .dot:focus-visible, #kbd-btn:focus-visible, .proj:focus-visible{
     outline:2px solid var(--accent); outline-offset:3px; border-radius:8px;
@@ -347,14 +385,16 @@
   @media (max-width:768px) {
     .panel{ align-items:center; padding:84px 22px; }
     .stats{ gap:22px; }
-    #hint{ display:none; }
+    #hint{ bottom:80px; }
     #avail{ display:none; }
     #kbd-btn{ display:none; }
     .skill-grid{ grid-template-columns:1fr; gap:16px; }
+    .ghost{ font-size:5.5rem; top:-56px; right:0; -webkit-text-stroke-width:1px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .r{ opacity:1 !important; transform:none !important; filter:none !important; }
-    #grain,#hint .mouse::after,#avail .ping{ animation:none; }
+    #grain,#hint .mouse::after,#avail .ping,.ghost{ animation:none; }
+    #wipe{ display:none; }
     *{ scroll-behavior:auto; }
   }
 </style>
@@ -364,6 +404,7 @@
 <canvas id="bg"></canvas>
 <div id="vignette"></div>
 <div id="grain"></div>
+<div id="wipe"></div>
 
 <!-- Preloader -->
 <div id="pre">
@@ -412,6 +453,7 @@
     <div class="sc-row"><span>Next / previous section</span><span><kbd>↓</kbd><kbd>↑</kbd></span></div>
     <div class="sc-row"><span>Jump to section</span><span><kbd>1</kbd>–<kbd>5</kbd></span></div>
     <div class="sc-row"><span>First / last</span><span><kbd>Home</kbd><kbd>End</kbd></span></div>
+    <div class="sc-row"><span>Peek around the corridor</span><span><kbd>Drag</kbd></span></div>
     <div class="sc-row"><span>Toggle this panel</span><span><kbd>?</kbd></span></div>
     <div class="sc-row"><span>Close</span><span><kbd>Esc</kbd></span></div>
   </div>
@@ -435,6 +477,7 @@
 <!-- 1: About -->
 <div class="panel" id="p1">
   <div class="panel-inner">
+    <span class="ghost" aria-hidden="true">01</span>
     <span class="eyebrow r" style="--d:.05s">01 — Background</span>
     <h2 class="r" style="--d:.12s">Engineering <span>intelligence</span><br>into everything I touch</h2>
     <p class="r" style="--d:.22s"><strong>Edwin Isac</strong> · Dublin, Ireland · MSc Data &amp; Computational Science (UCD)</p>
@@ -451,6 +494,7 @@
 <!-- 2: Selected Work -->
 <div class="panel" id="p2">
   <div class="panel-inner">
+    <span class="ghost" aria-hidden="true">02</span>
     <span class="eyebrow r" style="--d:.05s">02 — Selected Work</span>
     <h2 class="r" style="--d:.12s">Things I've <span>built</span></h2>
     <a href="https://github.com/edwiniac/mcp-witness" target="_blank" rel="noopener" class="proj r" style="--d:.2s" data-cursor>
@@ -479,6 +523,7 @@
 <!-- 3: Skills -->
 <div class="panel" id="p3">
   <div class="panel-inner" style="max-width:720px;">
+    <span class="ghost" aria-hidden="true">03</span>
     <span class="eyebrow r" style="--d:.05s">03 — Capabilities</span>
     <h2 class="r" style="--d:.12s">What I <span>command</span></h2>
     <div class="skill-grid">
@@ -518,6 +563,7 @@
 <!-- 4: Connect -->
 <div class="panel" id="p4">
   <div class="panel-inner" style="text-align:center;">
+    <span class="ghost" aria-hidden="true">04</span>
     <span class="eyebrow r" style="--d:.05s">04 — Contact</span>
     <h2 class="r" style="--d:.12s">Let's <span>build</span><br>something</h2>
     <p class="contact r" style="--d:.22s">Dublin, Ireland</p>
@@ -796,6 +842,57 @@ let current = 0;
 const mouse = { x:0, y:0 };
 const sections = ['Intro','About','Work','Skills','Connect'];
 
+// 360° look-around (drag on desktop, gyro on mobile)
+const look = { yaw:0, pitch:0, tYaw:0, tPitch:0 };
+let kick = 0;              // warp impulse on section change
+const bursts = [];         // click-spawned voxel particle groups
+let activeInner = document.querySelector('#p0 .panel-inner');
+
+if (isMobile) document.querySelector('#hint span').textContent = 'Swipe to explore';
+
+// ── Text scramble reveal ──────────────────────────
+const SCRAM = '█▓▒░<>/\\|=+*·';
+function scramble(el) {
+  if (reduce || !el) return;
+  const orig = el.dataset.txt || (el.dataset.txt = el.textContent);
+  if (el._siv) clearInterval(el._siv);
+  let f = 0; const total = 14;
+  el._siv = setInterval(() => {
+    f++;
+    el.textContent = orig.split('').map((c,i) =>
+      c === ' ' ? ' ' : (i < (f/total)*orig.length ? c : SCRAM[Math.floor(Math.random()*SCRAM.length)])
+    ).join('');
+    if (f >= total) { el.textContent = orig; clearInterval(el._siv); el._siv = null; }
+  }, 34);
+}
+
+// ── Voxel burst on click/tap ──────────────────────
+function spawnBurst(cx, cy) {
+  if (reduce || bursts.length > 4) return;
+  const nx = (cx/window.innerWidth)*2 - 1, ny = -(cy/window.innerHeight)*2 + 1;
+  const origin = new THREE.Vector3(nx, ny, 0.5).unproject(cam);
+  const dir = origin.sub(cam.position).normalize();
+  const p = cam.position.clone().addScaledVector(dir, 7);
+  const g = new THREE.Group();
+  for (let i = 0; i < 14; i++) {
+    const s = 0.06 + Math.random()*0.14;
+    const m = new THREE.Mesh(
+      new THREE.BoxGeometry(s, s, s),
+      new THREE.MeshBasicMaterial({
+        color:new THREE.Color().setHSL(0.73 + Math.random()*0.08, 0.7, 0.55 + Math.random()*0.3),
+        transparent:true, opacity:1, depthWrite:false, blending:THREE.AdditiveBlending,
+      })
+    );
+    m.position.copy(p);
+    m.userData.v = new THREE.Vector3((Math.random()-0.5)*4, (Math.random()-0.2)*4, (Math.random()-0.5)*4);
+    m.userData.rs = (Math.random()-0.5)*6;
+    g.add(m);
+  }
+  g.userData.life = 1;
+  scene.add(g);
+  bursts.push(g);
+}
+
 const camStops = [
   { x:0, y:3, z:3 },
   { x:-2.5, y:3, z:-10 },
@@ -830,16 +927,25 @@ function setPanel(n) {
   counterSec.textContent = sections[n];
   counterTot.textContent = String(n+1).padStart(2,'0') + ' / ' + String(TOTAL).padStart(2,'0');
   document.getElementById('hint').style.opacity = n === 0 ? '0.5' : '0';
+  if (activeInner) activeInner.style.transform = '';
+  activeInner = panels[n].querySelector('.panel-inner');
+  scramble(panels[n].querySelector('.eyebrow, .pre'));
 }
 function goTo(n) {
   const clamped = Math.max(0, Math.min(TOTAL-1, n));
   if (clamped === current) return;
   setPanel(clamped);
+  if (!reduce) {
+    kick = 1;
+    const w = document.getElementById('wipe');
+    w.classList.remove('go'); void w.offsetWidth; w.classList.add('go');
+  }
 }
 
 let wheelTimeout;
 window.addEventListener('wheel', (e) => {
   e.preventDefault();
+  if (scOverlay.classList.contains('on')) return;
   if (wheelTimeout) return;
   wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 820);
   goTo(current + Math.sign(e.deltaY));
@@ -861,6 +967,7 @@ scOverlay.addEventListener('click', () => toggleSC(false));
 window.addEventListener('keydown', e => {
   if (e.key === '?' ) { e.preventDefault(); toggleSC(); return; }
   if (e.key === 'Escape') { toggleSC(false); return; }
+  if (scOverlay.classList.contains('on')) return;
   if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'j') goTo(current+1);
   if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'k') goTo(current-1);
   if (e.key === 'Home') goTo(0);
@@ -880,6 +987,63 @@ document.addEventListener('mousemove', e => {
   mouse.y = -(e.clientY/window.innerHeight)*2+1;
 });
 
+// ── 360° DRAG-LOOK (desktop) ──────────────────────
+const INTERACTIVE = 'a,button,.proj,.btn,.pill,#nav,#shortcuts,#kbd-btn,#top';
+let dragInfo = null, suppressClick = false;
+if (!isMobile && !reduce) {
+  window.addEventListener('pointerdown', e => {
+    if (e.target.closest(INTERACTIVE)) return;
+    dragInfo = { x:e.clientX, y:e.clientY, moved:false };
+    document.body.classList.add('dragging');
+  });
+  window.addEventListener('pointermove', e => {
+    if (!dragInfo) return;
+    const dx = e.clientX - dragInfo.x, dy = e.clientY - dragInfo.y;
+    if (Math.abs(dx) + Math.abs(dy) > 5) dragInfo.moved = true;
+    look.tYaw = THREE.MathUtils.clamp(dx * 0.0032, -0.9, 0.9);
+    look.tPitch = THREE.MathUtils.clamp(dy * 0.0022, -0.5, 0.5);
+  });
+  const endDrag = () => {
+    if (!dragInfo) return;
+    suppressClick = dragInfo.moved;
+    dragInfo = null;
+    look.tYaw = 0; look.tPitch = 0;
+    document.body.classList.remove('dragging');
+  };
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+  window.addEventListener('blur', endDrag);
+}
+
+// ── 360° GYRO-LOOK (mobile) ───────────────────────
+if (isMobile && !reduce) {
+  let gyroBase = null;
+  const onGyro = e => {
+    if (e.beta == null) return;
+    if (gyroBase === null) gyroBase = e.beta;
+    look.tYaw = THREE.MathUtils.clamp((e.gamma || 0)/45, -1, 1) * 0.35;
+    look.tPitch = THREE.MathUtils.clamp((e.beta - gyroBase)/45, -1, 1) * 0.25;
+  };
+  if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) {
+    // iOS: permission must come from a user gesture — piggyback on first tap
+    window.addEventListener('touchend', function req() {
+      DeviceOrientationEvent.requestPermission()
+        .then(s => { if (s === 'granted') window.addEventListener('deviceorientation', onGyro); })
+        .catch(() => {});
+      window.removeEventListener('touchend', req);
+    }, { once:false });
+  } else {
+    window.addEventListener('deviceorientation', onGyro);
+  }
+}
+
+// ── Voxel burst trigger ───────────────────────────
+window.addEventListener('click', e => {
+  if (suppressClick) { suppressClick = false; return; }
+  if (e.target.closest(INTERACTIVE)) return;
+  spawnBurst(e.clientX, e.clientY);
+});
+
 // ── CUSTOM CURSOR + MAGNETIC ──────────────────────
 if (!isMobile) {
   const cdot = document.getElementById('cdot');
@@ -892,24 +1056,32 @@ if (!isMobile) {
   (function ringLoop(){
     rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
     cring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+    if (activeInner && !reduce) activeInner.style.transform = `translate3d(${-mouse.x*9}px,${mouse.y*7}px,0)`;
     requestAnimationFrame(ringLoop);
   })();
   document.querySelectorAll('a,[data-cursor],.pill').forEach(el=>{
     el.addEventListener('mouseenter',()=>cring.classList.add('hot'));
     el.addEventListener('mouseleave',()=>cring.classList.remove('hot'));
   });
-  // magnetic buttons / cards / projects
-  document.querySelectorAll('.btn,.proj').forEach(el=>{
-    const strength = el.classList.contains('proj') ? 0.12 : 0.3;
+  // magnetic buttons
+  document.querySelectorAll('.btn').forEach(el=>{
     el.addEventListener('mousemove', e=>{
       const r = el.getBoundingClientRect();
       const dx = e.clientX - (r.left + r.width/2);
       const dy = e.clientY - (r.top + r.height/2);
-      el.style.transform = `translate(${dx*strength}px,${dy*strength}px)`;
-      if (el.classList.contains('proj')){
-        el.style.setProperty('--mx', (e.clientX-r.left)+'px');
-        el.style.setProperty('--my', (e.clientY-r.top)+'px');
-      }
+      el.style.transform = `translate(${dx*0.3}px,${dy*0.3}px)`;
+    });
+    el.addEventListener('mouseleave', ()=>{ el.style.transform=''; });
+  });
+  // 3D tilt project cards + spotlight tracking
+  document.querySelectorAll('.proj').forEach(el=>{
+    el.addEventListener('mousemove', e=>{
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - 0.5;
+      const py = (e.clientY - r.top)/r.height - 0.5;
+      el.style.transform = `perspective(700px) rotateX(${(-py*6).toFixed(2)}deg) rotateY(${(px*8).toFixed(2)}deg) translateZ(6px)`;
+      el.style.setProperty('--mx', (e.clientX-r.left)+'px');
+      el.style.setProperty('--my', (e.clientY-r.top)+'px');
     });
     el.addEventListener('mouseleave', ()=>{ el.style.transform=''; });
   });
@@ -917,19 +1089,37 @@ if (!isMobile) {
 
 // ── LOOP ──────────────────────────────────────────
 const clock = new THREE.Clock();
+const BASE_FOV = 64;
+const bloomBase = bloom.strength;
+let rafId = null;
 function loop() {
-  requestAnimationFrame(loop);
+  rafId = requestAnimationFrame(loop);
   const dt = Math.min(clock.getDelta(),0.1);
   const t = performance.now()*0.001;
 
   const target = camStops[current];
   const ease = 0.055;
   cam.position.x += (target.x + mouse.x*2.5 - cam.position.x) * ease;
-  cam.position.y += (target.y - mouse.y*0.8 - cam.position.y) * ease;
+  cam.position.y += (target.y - mouse.y*0.8 + Math.sin(t*0.6)*0.07 - cam.position.y) * ease;
   cam.position.z += (target.z - cam.position.z) * ease;
   cam.lookAt(mouse.x*3.5, cam.position.y - 0.5, cam.position.z - 14);
   // subtle cinematic bank toward mouse (applied after lookAt, which resets rotation)
   cam.rotation.z = -mouse.x * 0.04;
+
+  // 360° look-around: eased yaw/pitch layered on top of the lookAt
+  look.yaw += (look.tYaw - look.yaw) * 0.08;
+  look.pitch += (look.tPitch - look.pitch) * 0.08;
+  if (Math.abs(look.yaw) > 0.0004 || Math.abs(look.pitch) > 0.0004) {
+    cam.rotateY(-look.yaw);
+    cam.rotateX(-look.pitch);
+  }
+
+  // warp kick: FOV punch + bloom surge, decays after each section jump
+  kick = Math.max(0, kick - dt*2.2);
+  const k = kick*kick;
+  cam.fov = BASE_FOV + k*10;
+  cam.updateProjectionMatrix();
+  bloom.strength = bloomBase + k*0.7;
 
   torches.forEach((f,i) => { f.intensity = 3 + Math.sin(t*3.5 + i*0.8)*1.1; });
   portalLight.intensity = 80 + Math.sin(t*0.6)*14;
@@ -948,10 +1138,31 @@ function loop() {
     c.rotation.x += dt*0.3; c.rotation.y += dt*0.2;
   });
 
+  // voxel bursts
+  for (let i = bursts.length-1; i >= 0; i--) {
+    const g = bursts[i];
+    g.userData.life -= dt*1.1;
+    const life = g.userData.life;
+    if (life <= 0) {
+      g.children.forEach(m => { m.geometry.dispose(); m.material.dispose(); });
+      scene.remove(g);
+      bursts.splice(i,1);
+      continue;
+    }
+    g.children.forEach(m => {
+      m.position.addScaledVector(m.userData.v, dt);
+      m.userData.v.y -= dt*2.2;
+      m.rotation.x += dt*m.userData.rs;
+      m.rotation.y += dt*m.userData.rs;
+      m.material.opacity = life;
+    });
+  }
+
   const dp = dust.geometry.attributes.position.array;
+  const dustSpeed = 0.15 + k*5; // dust streaks forward during warp
   for (let i=0;i<500;i++) {
     dp[i*3+1] += Math.sin(t + i)*0.0015;
-    dp[i*3+2] -= dt*0.15;
+    dp[i*3+2] -= dt*dustSpeed;
     if (dp[i*3+2] < -62) dp[i*3+2] = -1;
     if (dp[i*3+1] > 7) dp[i*3+1] = 0;
     if (dp[i*3+1] < 0) dp[i*3+1] = 0;
@@ -961,6 +1172,12 @@ function loop() {
   composer.render();
 }
 loop();
+
+// pause the render loop while the tab is hidden (battery + thermals)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { cancelAnimationFrame(rafId); rafId = null; }
+  else if (rafId === null) { clock.getDelta(); loop(); }
+});
 
 window.addEventListener('resize',()=>{
   const w=window.innerWidth, h=window.innerHeight;
