@@ -2,8 +2,7 @@
   "name": "edwin-portfolio",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist && mkdir -p dist && cp -R public/. dist/",
-    "vercel-build": "npm run build",
-    "dev": "python3 -m http.server 4173 --directory public"
+    "build": "mkdir -p dist && cp public/index.html dist/",
+    "vercel-build": "mkdir -p dist && cp public/index.html dist/"
   }
 }
