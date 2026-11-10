@@ -1,5 +1,5 @@
 {
-  "buildCommand": "mkdir -p dist && cp public/index.html dist/",
+  "buildCommand": "rm -rf dist && mkdir -p dist && cp -R public/. dist/",
   "outputDirectory": "dist",
   "installCommand": "echo 'no install needed'",
   "framework": null,
