@@ -60,7 +60,7 @@ const FilmShader = {
       }
       col /= float(SAMPLES);
       float v = smoothstep(0.92, 0.22, length(c * vec2(1.0, 1.12)));
-      col *= mix(0.12, 1.0, v);
+      col *= mix(0.38, 1.0, v);
       col += (hash(vUv * 900.0 + fract(uTime) * 61.0) - 0.5) * 0.028;
       gl_FragColor = vec4(max(col, 0.0), 1.0);
     }`,
@@ -99,17 +99,18 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, coarse ? 1.5 : 1.75));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.2;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#040106');
-  scene.fog = new THREE.FogExp2('#040106', 0.011);
+  scene.background = new THREE.Color('#05020a');
+  scene.fog = new THREE.FogExp2('#0a0416', 0.0075);
 
   const cam = new THREE.PerspectiveCamera(BASE_FOV, window.innerWidth / window.innerHeight, 0.3, 200);
   cam.position.set(0, 1.2, 17);
 
   // ── Lights ──────────────────────────────────────
-  scene.add(new THREE.AmbientLight('#2a1640', 1.5));
+  scene.add(new THREE.AmbientLight('#2a1640', 1.6));
+  scene.add(new THREE.HemisphereLight('#5a45b0', '#12061c', 0.9));
   const portalLight = new THREE.PointLight('#ede9fe', 90, 70);
   portalLight.position.set(0, 4.5, PORTAL_Z + 2.5);
   scene.add(portalLight);
@@ -119,12 +120,14 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
 
   // ── Architecture (instanced) ────────────────────
   const MATS = {
-    dark:   new THREE.MeshStandardMaterial({ color: '#0e0817', roughness: 0.62, metalness: 0.18 }),
-    mid:    new THREE.MeshStandardMaterial({ color: '#160d23', roughness: 0.6,  metalness: 0.2 }),
-    light:  new THREE.MeshStandardMaterial({ color: '#1d122c', roughness: 0.5,  metalness: 0.28 }),
-    accent: new THREE.MeshStandardMaterial({ color: '#251137', roughness: 0.5,  metalness: 0.3 }),
-    violet: new THREE.MeshStandardMaterial({ color: '#2d123c', roughness: 0.5,  metalness: 0.3, emissive: '#1a0820', emissiveIntensity: 0.3 }),
-    wall:   new THREE.MeshStandardMaterial({ color: '#0b0713', roughness: 0.72, metalness: 0.15 }),
+    dark:   new THREE.MeshStandardMaterial({ color: '#1a1230', roughness: 0.38, metalness: 0.45 }),
+    mid:    new THREE.MeshStandardMaterial({ color: '#241840', roughness: 0.55, metalness: 0.25 }),
+    light:  new THREE.MeshStandardMaterial({ color: '#30214f', roughness: 0.4,  metalness: 0.4 }),
+    accent: new THREE.MeshStandardMaterial({ color: '#3a1d58', roughness: 0.5,  metalness: 0.3 }),
+    violet: new THREE.MeshStandardMaterial({ color: '#46205f', roughness: 0.5,  metalness: 0.3, emissive: '#2a0f3a', emissiveIntensity: 0.5 }),
+    wall:   new THREE.MeshStandardMaterial({ color: '#191029', roughness: 0.66, metalness: 0.2 }),
+    lantern: new THREE.MeshBasicMaterial({ color: '#8f6bff' }),
+    far:    new THREE.MeshBasicMaterial({ color: '#0f0922', fog: false }),
     iron:   new THREE.MeshStandardMaterial({ color: '#1a1414', roughness: 0.3,  metalness: 0.8 }),
     rune:   new THREE.MeshBasicMaterial({ color: '#4c2fa0' }),
   };
@@ -157,6 +160,18 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
       for (let row = 0; row < 6; row++)
         box(row < 2 ? 'wall' : (row === 2 ? 'mid' : 'dark'), side * (8.8 - (row % 2 ? 1.1 : 0)), row * 1.05 + 0.5, z,
           2.2 * jit(0.85, 0.3), 1.05 * jit(0.85, 0.3), 1.05 * jit(0.85, 0.3));
+  // ceiling: long beams and cross-ribs, open to the sky between them
+  for (const x of [-4.2, 4.2]) box('accent', x, 9.0, (PORTAL_Z - 1) / 2, 0.5, 0.5, -PORTAL_Z + 1);
+  for (let z = -7; z > PORTAL_Z + 3; z -= 9) box('mid', 0, 9.3, z, 17, 0.35, 0.8);
+  // a lantern hangs from every keystone, so the eye can count the arches into the distance
+  for (let z = -2.5; z > PORTAL_Z + 3; z -= 9) { box('iron', 0, 7.75, z, 0.05, 1.5, 0.05); box('lantern', 0, 6.85, z, 0.3, 0.42, 0.3); }
+  // megastructure beyond the walls: the corridor is one small part of a much larger machine
+  for (let i = 0; i < 46; i++) {
+    const a = (i / 46) * Math.PI * 2;
+    box('far', Math.cos(a) * 46, 16 + Math.sin(a) * 46 * 0.42, -44 + Math.sin(a) * 30, 3.2, 3.2, 3.2);
+    if (i % 2) box('far', Math.cos(a + 0.4) * 70, 30 + Math.sin(a + 0.4) * 70 * 0.3, -70 - Math.sin(a) * 40, 5, 5, 5);
+  }
+  for (let i = 0; i < 26; i++) { const s = i % 2 ? 1 : -1, h = 10 + Math.random() * 34; box('far', s * (24 + Math.random() * 34), h / 2 - 2, -Math.random() * 110, 2.5 + Math.random() * 3, h, 2.5 + Math.random() * 3); }
   // torch brackets
   TORCH_Z.forEach(z => { if (z !== null) for (const side of [-1, 1]) box('iron', side * 8.15, 4.6, z, 0.7, 0.14, 0.14, side * 0.5); });
 
@@ -173,8 +188,81 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
   }
   dummy.rotation.set(0, 0, 0);
 
+  // ── Glyphs: lit slots in the walls. The machine is running behind the stone. ──
+  const glyphs = [];
+  for (let z = -2.5; z > PORTAL_Z + 2; z -= 1.05)
+    for (const side of [-1, 1])
+      for (let row = 0; row < 6; row++) {
+        if (Math.random() > 0.2) continue;
+        glyphs.push({ x: side * ((row % 2 ? 7.7 : 8.8) - 1.1), y: row * 1.05 + 0.5 + (Math.random() - 0.5) * 0.5, z,
+          sy: 0.08 + Math.random() * 0.3, sz: 0.15 + Math.random() * 0.6, sp: 0.4 + Math.random() * 1.8, ph: Math.random() * 6.28, warm: Math.random() < 0.4 });
+      }
+  const glyphMesh = new THREE.InstancedMesh(unit, new THREE.MeshBasicMaterial(), glyphs.length);
+  glyphMesh.frustumCulled = false;
+  glyphs.forEach((g, i) => { dummy.position.set(g.x, g.y, g.z); dummy.scale.set(0.5, g.sy, g.sz); dummy.updateMatrix(); glyphMesh.setMatrixAt(i, dummy.matrix); glyphMesh.setColorAt(i, tmpCol.set('#000')); });
+  scene.add(glyphMesh);
+  const G_COLD = new THREE.Color('#6d4dff'), G_WARM = new THREE.Color('#ff9a3c');
+  let litFront = 12;
+
+  // ── Mist: drifting sheets you pass through, and a layer hugging the floor ──
+  const mistFrag = `
+    uniform float uTime, uSeed, uFade, uAlpha; varying vec2 vUv;
+    float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+    float noise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x), mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x), f.y); }
+    float fbm(vec2 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*noise(p); p=p*2.03+7.1; a*=0.5; } return s; }
+    void main(){
+      float n = fbm(vUv * vec2(4.0, 2.2) + vec2(uTime * 0.03 + uSeed, uSeed * 3.1 - uTime * 0.012));
+      float edge = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x) * smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.55, vUv.y);
+      float a = smoothstep(0.3, 0.8, n) * edge * uAlpha * uFade;
+      gl_FragColor = vec4(vec3(0.42, 0.3, 0.9) * a, a);
+    }`;
+  const mistMat = (seed, alpha) => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uSeed: { value: seed }, uFade: { value: 1 }, uAlpha: { value: alpha } },
+    vertexShader: FilmShader.vertexShader, fragmentShader: mistFrag,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const mists = [];
+  for (let z = -6; z > PORTAL_Z + 4; z -= coarse ? 16 : 9) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(20, 9), mistMat(Math.random() * 20, 0.2));
+    m.position.set(0, 3.6, z); scene.add(m); mists.push(m);
+  }
+  for (const y of [-0.3, 0.35]) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(18, 66), mistMat(Math.random() * 20, 0.16));
+    m.rotation.x = -Math.PI / 2; m.position.set(0, y, PORTAL_Z / 2); m.userData.floor = true; scene.add(m); mists.push(m);
+  }
+
+  // ── Light shafts pouring out of the portal ──────
+  const shaftMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uWarm: { value: 0 }, uPower: { value: 1 } },
+    vertexShader: FilmShader.vertexShader,
+    fragmentShader: `uniform float uTime, uWarm, uPower; varying vec2 vUv;
+      void main(){
+        float across = smoothstep(0.0, 0.5, vUv.x) * smoothstep(1.0, 0.5, vUv.x);
+        float along = pow(1.0 - vUv.y, 1.6) * smoothstep(0.0, 0.04, vUv.y);
+        float a = across * along * (0.085 + 0.03 * sin(uTime * 0.7 + vUv.y * 9.0)) * uPower;
+        gl_FragColor = vec4(mix(vec3(0.6, 0.5, 1.0), vec3(1.0, 0.72, 0.42), uWarm) * a, a);
+      }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const shafts = new THREE.Group();
+  const SHAFT_N = coarse ? 7 : 12;
+  for (let i = 0; i < SHAFT_N; i++) {
+    const geo = new THREE.PlaneGeometry(1.5 + Math.random() * 1.6, 48); geo.translate(0, 24, 0); geo.rotateX(Math.PI / 2);
+    const pivot = new THREE.Group(); pivot.rotation.z = (i / SHAFT_N) * Math.PI * 2 + Math.random() * 0.3;
+    const m = new THREE.Mesh(geo, shaftMat); m.rotation.x = -0.05 - Math.random() * 0.09; m.position.y = 1.2;
+    pivot.add(m); shafts.add(pivot);
+  }
+  shafts.position.set(0, 3.8, PORTAL_Z + 0.5);
+  scene.add(shafts);
+
+  // ── Stars above the open roof ───────────────────
+  const sGeo = new THREE.BufferGeometry(), sPos = new Float32Array(700 * 3);
+  for (let i = 0; i < 700; i++) { sPos[i * 3] = (Math.random() - 0.5) * 220; sPos[i * 3 + 1] = 12 + Math.random() * 80; sPos[i * 3 + 2] = 30 - Math.random() * 190; }
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+  const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ size: 0.5, color: '#cfc4ff', transparent: true, opacity: 0.8, fog: false, depthWrite: false }));
+  stars.frustumCulled = false; scene.add(stars);
+
   // ── Torches ─────────────────────────────────────
-  const COLD = new THREE.Color('#3a2a78'), HOT = new THREE.Color('#ffb066');
+  const COLD = new THREE.Color('#6a50e8'), HOT = new THREE.Color('#ffb066');
   const torches = [];   // one entry per side
   TORCH_Z.forEach((z, ch) => {
     if (z === null) return;
@@ -182,8 +270,8 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
       const flame = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.36, 0.24), new THREE.MeshBasicMaterial({ color: COLD.clone() }));
       flame.position.set(side * 7.9, 5.0, z);
       scene.add(flame);
-      const light = new THREE.PointLight('#6366f1', 3, 15, 1.7);
-      light.position.set(side * 7.3, 5.2, z);
+      const light = new THREE.PointLight('#6366f1', 3, 19, 1.5);
+      light.position.set(side * 6.4, 5.2, z);
       // phones get one light per pair to keep the fragment cost down
       if (!coarse || side === 1) { if (coarse) light.position.x = 0; scene.add(light); }
       torches.push({ ch, side, flame, light, lit: 0, target: 0, phase: Math.random() * 6 });
@@ -374,13 +462,13 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
       const kz = k1(introSlow ? 1.25 : 3.3);
       const dz = stop.z - cam.position.z;
       const bob = reduce ? 0 : Math.sin(t * 10.5) * 0.055 * Math.min(1, Math.abs(dz) / 3.5);
-      cam.position.x += (stop.x + mouse.x * 1.3 - cam.position.x) * kz;
+      cam.position.x += (stop.x + mouse.x * 2.1 - cam.position.x) * kz;
       cam.position.y += (stop.y - mouse.y * 0.6 + Math.sin(t * 0.6) * 0.07 + bob - cam.position.y) * kz;
       cam.position.z += dz * kz;
     } else {
       cam.position.y = 1.2 + Math.sin(t * 0.5) * 0.08;
     }
-    cam.lookAt(cam.position.x * 0.2 + mouse.x * 2, cam.position.y - 0.5, cam.position.z - 14);
+    cam.lookAt(cam.position.x * 0.2 + mouse.x * 3, cam.position.y - 0.5, cam.position.z - 14);
     cam.rotation.z = -mouse.x * 0.035;
     look.yaw += (look.tYaw - look.yaw) * k1(5);
     look.pitch += (look.tPitch - look.pitch) * k1(5);
@@ -420,7 +508,7 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
       tc.lit += (tc.target - tc.lit) * k1(tc.target > tc.lit ? 3.5 : 1.5);
       const flick = 0.82 + Math.sin(t * 9 + tc.phase) * 0.1 + Math.sin(t * 23.7 + tc.phase * 2) * 0.08;
       tc.light.color.copy(COLD).lerp(HOT, tc.lit);
-      tc.light.intensity = (3 + tc.lit * (coarse ? 20 : 12) * flick) * (0.25 + 0.75 * moodTorch);
+      tc.light.intensity = (9 + tc.lit * (coarse ? 18 : 8) * flick) * (0.25 + 0.75 * moodTorch);
       tc.flame.material.color.copy(COLD).lerp(HOT, tc.lit).multiplyScalar(0.5 + tc.lit * (0.6 + 0.5 * moodTorch));
       tc.flame.scale.set(1, 1 + tc.lit * (0.25 + Math.sin(t * 12 + tc.phase) * 0.18), 1);
       for (let s = 0; s < SPARKS_PER; s++, si++) {
@@ -433,6 +521,27 @@ export function createWorld(canvas, { reduce = false, coarse = false } = {}) {
       }
     }
     sparkMesh.instanceMatrix.needsUpdate = true;
+
+    // glyphs: cold until you have walked past them, then some of them stay warm
+    let front = 12;
+    for (let i = 0; i < torches.length; i++) if (torches[i].lit > 0.5) front = Math.min(front, torches[i].light.position.z - 5);
+    litFront += (front - litFront) * k1(0.9);
+    for (let i = 0; i < glyphs.length; i++) {
+      const g = glyphs[i], b = Math.max(0, Math.sin(t * g.sp + g.ph));
+      const w = g.warm ? THREE.MathUtils.clamp((g.z - litFront) / 4, 0, 1) : 0;
+      glyphMesh.setColorAt(i, tmpCol.copy(G_COLD).lerp(G_WARM, w).multiplyScalar((0.1 + b * b * b * 0.8 + k * 1.5) * (0.4 + 0.6 * moodTorch)));
+    }
+    glyphMesh.instanceColor.needsUpdate = true;
+
+    // mist + shafts
+    for (let i = 0; i < mists.length; i++) {
+      const m = mists[i], u = m.material.uniforms;
+      u.uTime.value = t;
+      if (!m.userData.floor) u.uFade.value = THREE.MathUtils.smoothstep(cam.position.z - m.position.z, 1.5, 8);
+    }
+    shaftMat.uniforms.uTime.value = t; shaftMat.uniforms.uWarm.value = warm;
+    shaftMat.uniforms.uPower.value = moodPortal * (0.8 + level * 1.5 + k);
+    shafts.rotation.z = t * 0.02;
 
     // portal
     portalRing.rotation.z += dt * (0.15 + k * 2);

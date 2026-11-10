@@ -99,9 +99,10 @@ p strong{ color:#e2d6ee; font-weight:600; }
 #p0 .panel-inner{ text-align:center; max-width:780px; padding-top:clamp(120px,25vh,250px); }
 #p5 .panel-inner{ text-align:center; max-width:560px; }
 /* a soft scrim keeps the words readable against a lit, moving scene */
-.panel::before{ content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(ellipse 62% 58% at 50% 52%, rgba(4,1,6,0.74), rgba(4,1,6,0.4) 55%, transparent 80%); }
-#p0::before{ background:radial-gradient(ellipse 58% 40% at 50% 66%, rgba(4,1,6,0.7), transparent 78%); }
-#p5::before{ background:radial-gradient(ellipse 34% 44% at 50% 50%, rgba(4,1,6,0.86), rgba(4,1,6,0.6) 60%, transparent); }
+.panel::before{ content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(ellipse 58% 52% at 50% 52%, rgba(4,1,6,0.5), rgba(4,1,6,0.22) 55%, transparent 78%); }
+.panel p, .sub, .stat, .skill-group .sg-label{ text-shadow:0 1px 3px rgba(0,0,0,0.95), 0 0 16px rgba(0,0,0,0.8); }
+#p0::before{ background:radial-gradient(ellipse 46% 30% at 50% 66%, rgba(4,1,6,0.42), transparent 78%); }
+#p5::before{ background:radial-gradient(ellipse 30% 40% at 50% 50%, rgba(4,1,6,0.8), rgba(4,1,6,0.5) 60%, transparent); }
 #p5 .btns{ justify-content:center; margin-top:18px; }
 #p4 .panel-inner{ max-width:700px; }
 #p3 .panel-inner{ max-width:720px; }
@@ -110,8 +111,8 @@ p strong{ color:#e2d6ee; font-weight:600; }
 @media (min-width:1180px){
   .panel[data-side="r"]{ justify-content:flex-start; padding-left:max(7vw, calc(50vw - 590px)); }
   .panel[data-side="l"]{ justify-content:flex-end; padding-right:max(9vw, calc(50vw - 590px)); }
-  .panel[data-side="r"]::before{ background:linear-gradient(90deg, rgba(4,1,6,0.82) 0%, rgba(4,1,6,0.62) 40%, transparent 66%); }
-  .panel[data-side="l"]::before{ background:linear-gradient(270deg, rgba(4,1,6,0.82) 0%, rgba(4,1,6,0.62) 42%, transparent 68%); }
+  .panel[data-side="r"]::before{ background:linear-gradient(90deg, rgba(4,1,6,0.55) 0%, rgba(4,1,6,0.34) 36%, transparent 58%); }
+  .panel[data-side="l"]::before{ background:linear-gradient(270deg, rgba(4,1,6,0.55) 0%, rgba(4,1,6,0.34) 38%, transparent 60%); }
   #p2 .panel-inner{ max-width:clamp(680px, 52vw, 800px); }
   .projs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .projs .proj{ margin:0; }
